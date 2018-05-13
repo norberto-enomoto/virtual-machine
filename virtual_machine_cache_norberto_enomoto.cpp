@@ -162,17 +162,18 @@ unsigned long Register[10];
 // Prototipos
 void decode(void);
 void evaluate(void);
+
+unsigned long getInstructionType(unsigned long instruction);
+unsigned long getRegisterSourceA(unsigned long instruction);
+unsigned long getRegisterSourceB(unsigned long instruction);
+unsigned long getRegisterDestination(unsigned long instruction);
+unsigned long getRegisterAddressMemory(unsigned long instruction);
+
 unsigned int get_in_cache(unsigned int inst_addr);
 unsigned int load_cache(unsigned int inst_addr);
 
 
 /*
-   getInstructionuction
-   getRegisterSourceA
-   getRegisterSourceB
-   getRegisterDestination
-   getRegisterAddressMemory
-
    trocar o if por switch
 
    carregar de um arquivo -> programa memory
@@ -219,8 +220,8 @@ int main()
 }
 
 void decode(void)
-{
-	InstructionType = Instruction & 0b00000000000000000000000011111111;
+{	
+	InstructionType = getInstructionType(Instruction);
 	cout << "InstructionType: " << InstructionType << endl;
 
 	if (InstructionType == 1 || InstructionType == 3)
@@ -229,9 +230,12 @@ void decode(void)
 		RegisterSourceA = Instruction >> 16;
 		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
 		cout << "RegisterSourceA: " << RegisterSourceA << endl;
+		
+
 		RegisterSourceB = Instruction >> 8;
 		RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
 		cout << "RegisterSourceB: " << RegisterSourceB << endl;
+		
 		RegisterDestination = Instruction >> 24;
 		cout << "RegisterDestination: " << RegisterDestination << endl;
 	}
@@ -278,6 +282,11 @@ void evaluate(void)
 		DataMemory[RegisterAddressMemory] = Register[RegisterSourceA];
 		break;
 	}
+}
+
+unsigned long getInstructionType(unsigned long instruction)
+{	
+	return instruction & 0b00000000000000000000000011111111;
 }
 
 unsigned int get_in_cache(unsigned int inst_addr)
