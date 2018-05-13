@@ -165,8 +165,8 @@ void evaluate(void);
 
 unsigned long getInstructionType(unsigned long instruction);
 
-unsigned int get_in_cache(unsigned int inst_addr);
-unsigned int load_cache(unsigned int inst_addr);
+unsigned int get_in_cache(unsigned long inst_addr);
+unsigned int load_cache(unsigned long inst_addr);
 
 
 /*
@@ -213,61 +213,61 @@ int main()
 }
 
 void decode(void)
-{	
+{
 	InstructionType = getInstructionType(Instruction);
 	cout << "InstructionType: " << InstructionType << endl;
-	
+
 	switch( InstructionType )
 	{
 		// Soma
-		case 1:
-			RegisterSourceA = Instruction >> 16;
-			RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
-			cout << "RegisterSourceA: " << RegisterSourceA << endl;		
+	case 1:
+		RegisterSourceA = Instruction >> 16;
+		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
+		cout << "RegisterSourceA: " << RegisterSourceA << endl;
 
-        	RegisterSourceB = Instruction >> 8;
-			RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
-			cout << "RegisterSourceB: " << RegisterSourceB << endl;
-					
-			RegisterDestination = Instruction >> 24;
-			cout << "RegisterDestination: " << RegisterDestination << endl;
-			break;
-		
+		RegisterSourceB = Instruction >> 8;
+		RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
+		cout << "RegisterSourceB: " << RegisterSourceB << endl;
+
+		RegisterDestination = Instruction >> 24;
+		cout << "RegisterDestination: " << RegisterDestination << endl;
+		break;
+
 		// Substração
-		case 3:
-			RegisterSourceA = Instruction >> 16;
-			RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
-			cout << "RegisterSourceA: " << RegisterSourceA << endl;		
+	case 3:
+		RegisterSourceA = Instruction >> 16;
+		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
+		cout << "RegisterSourceA: " << RegisterSourceA << endl;
 
-        	RegisterSourceB = Instruction >> 8;
-			RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
-			cout << "RegisterSourceB: " << RegisterSourceB << endl;
-					
-			RegisterDestination = Instruction >> 24;
-			cout << "RegisterDestination: " << RegisterDestination << endl;
-			break;		
-		
+		RegisterSourceB = Instruction >> 8;
+		RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
+		cout << "RegisterSourceB: " << RegisterSourceB << endl;
+
+		RegisterDestination = Instruction >> 24;
+		cout << "RegisterDestination: " << RegisterDestination << endl;
+		break;
+
 		// Load
-		case 8:
-			RegisterDestination = Instruction >> 8;
-			RegisterDestination = RegisterDestination & 0b00000000000000000000000011111111;
-			cout << "RegisterDestination: " << RegisterDestination << endl;
-			
-			RegisterAddressMemory = Instruction >> 16;
-			RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
-			cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
-			break;
-		
-        // Store
-		case 9:
-			RegisterSourceA = Instruction >> 8;
-			RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
-			cout << "RegisterSourceA: " << RegisterSourceA << endl;
-			
-			RegisterAddressMemory = Instruction >> 16;
-			RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
-			cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
-			break;			
+	case 8:
+		RegisterDestination = Instruction >> 8;
+		RegisterDestination = RegisterDestination & 0b00000000000000000000000011111111;
+		cout << "RegisterDestination: " << RegisterDestination << endl;
+
+		RegisterAddressMemory = Instruction >> 16;
+		RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
+		cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
+		break;
+
+		// Store
+	case 9:
+		RegisterSourceA = Instruction >> 8;
+		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
+		cout << "RegisterSourceA: " << RegisterSourceA << endl;
+
+		RegisterAddressMemory = Instruction >> 16;
+		RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
+		cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
+		break;
 	}
 }
 
@@ -295,15 +295,15 @@ void evaluate(void)
 }
 
 unsigned long getInstructionType(unsigned long instruction)
-{	
+{
 	return instruction & 0b00000000000000000000000011111111;
 }
 
-unsigned int get_in_cache(unsigned int inst_addr)
+unsigned int get_in_cache(unsigned long inst_addr)
 {
 	unsigned char Line, Word;
-	unsigned int Tag;
-	unsigned int InstAux;
+	unsigned long Tag;
+	unsigned long InstAux;
 
 	Word = inst_addr & 0x01;
 	Line = inst_addr >> 1;
@@ -323,12 +323,12 @@ unsigned int get_in_cache(unsigned int inst_addr)
 	return InstAux;
 }
 
-unsigned int load_cache(unsigned int inst_addr)
+unsigned int load_cache(unsigned long inst_addr)
 {
 	unsigned char Line, Word, i;
-	unsigned int Tag;
-	unsigned int InstAux;
-	unsigned int AuxInstAdd;
+	unsigned long Tag;
+	unsigned long InstAux;
+	unsigned long AuxInstAdd;
 
 
 	Word = inst_addr & 0x01;
