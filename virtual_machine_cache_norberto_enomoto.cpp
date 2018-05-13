@@ -59,14 +59,41 @@ Detalhes do set de Instructionuções
 
 using namespace std;
 
+// Definicao da Memoria cache
+typedef struct LineMemoryCache
+{
+	bool 			bValid;
+	unsigned int	Tag;
+	unsigned int 	Data[2]; 
+}LineMemoryCacheStruct;
+
+
 // Memoria de programa
+unsigned long ProgramMemory[] = {0b00000000000000000000000000001000,
+                                  0b00000000000000010000000100001000,
+                                  0b00000010000000000000000100000001,
+                                  0b00000000000000100000001000001001,
+                                  0b00000000000000100000000000001000,
+                                  0b00000000000000010000000100001000,
+                                  0b00000010000000000000000100000001,
+                                  0b00000000000000110000001000001001
+                                  };
+
+
+/*
 unsigned long ProgramMemory[] = {0b00000000000000000000000000001000,
 								 0b00000000000000010000000100001000,
 								 0b00000010000000000000000100000001,
 								 0b00000000000000100000001000001001,
 								};
+*/								
+
+
 // Memoria de dados
 unsigned long DataMemory[] = {1, 2, 0, 0, 0, 0, 0, 0};
+
+// Memoria cahe
+LineMemoryCacheStruct  MemoryCache[2]; // numero de linhas da cache
 
 // Registradores
 unsigned long ProgramCounter;
@@ -81,6 +108,9 @@ unsigned long Register[10];
 // Prototipos
 void decode(void);
 void evaluate(void);
+unsigned int get_in_cache(unsigned int inst_addr);
+unsigned int load_cache(unsigned int inst_addr);
+
 
 /*
    getInstructionuction
@@ -90,6 +120,8 @@ void evaluate(void);
    getRegisterAddressMemory
 
    trocar o if por switch
+   
+   carregar de um arquivo -> programa memory
 
 */
 
@@ -105,11 +137,19 @@ int main()
 	{
 		Register[i] = 0;
 	}
+	
+	for(i = 0; i < 2; i++)
+	{
+		MemoryCache[i].bValid = false;
+	}
 
-	while (ProgramCounter < 4)
+	while (ProgramCounter < 8)
 	{
 		// busca da Instrução
-		Instruction = ProgramMemory[ProgramCounter];
+		// Instruction = ProgramMemory[ProgramCounter];
+		
+		Instruction = get_in_cache(ProgramCounter);//ProgMemory[PC]; // busca da instrução
+		
 		ProgramCounter = ProgramCounter + 1;
 		// decodicação
 		decode();
@@ -210,3 +250,53 @@ void evaluate(void)
 	}
 	*/
 }
+
+unsigned int get_in_cache(unsigned int inst_addr)
+{
+	unsigned char Line, Word;
+	unsigned int Tag;
+	unsigned int InstAux;
+	
+	Word = inst_addr & 0x01;
+	Line = inst_addr >> 1;
+	Line &= 0x01;
+	Tag = inst_addr >> 2;
+	
+	if(MemoryCache[Line].bValid)
+	{
+		if(MemoryCache[Line].Tag == Tag)
+		{
+			InstAux = MemoryCache[Line].Data[Word];
+		}
+		else InstAux = load_cache(inst_addr);
+	}
+	else InstAux = load_cache(inst_addr);
+	
+	return InstAux;
+}
+
+unsigned int load_cache(unsigned int inst_addr)
+{
+	unsigned char Line, Word, i;
+	unsigned int Tag;
+	unsigned int InstAux;
+	unsigned int AuxInstAdd;
+	
+	
+	Word = inst_addr & 0x01;
+	Line = inst_addr >> 1;
+	Line &= 0x01;
+	Tag = inst_addr >> 2;
+	
+	MemoryCache[Line].bValid = true;
+	MemoryCache[Line].Tag = Tag;
+	AuxInstAdd = inst_addr - Word;
+	for(i = 0; i < 2; i++)
+	{
+		MemoryCache[Line].Data[i] = ProgramMemory[AuxInstAdd + i];
+		if((AuxInstAdd + i) == inst_addr)InstAux = ProgramMemory[AuxInstAdd + i];
+	}
+
+	return InstAux;
+}
+
