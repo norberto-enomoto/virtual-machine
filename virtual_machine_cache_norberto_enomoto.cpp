@@ -19,7 +19,7 @@ Detalhes do set de Instructionuções
 		LOAD: 	0001000
 		STORE:	0001001
 
-	Instructionuções Tipo 1:
+	Instruções Tipo 1:
 
 		- Utilizado para operações aritméticas (soma, subtração, ...)
 
@@ -37,7 +37,7 @@ Detalhes do set de Instructionuções
  	 	 	 em registro 2 (00000010 >> end. Reg Dest.)
 
 
-    Instructionuções Tipo 2:
+    Instruções Tipo 2:
 
      	 - Uitlizado para operações de LOAD e STORE
 
