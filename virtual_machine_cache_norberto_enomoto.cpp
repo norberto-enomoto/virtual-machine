@@ -164,20 +164,13 @@ void decode(void);
 void evaluate(void);
 
 unsigned long getInstructionType(unsigned long instruction);
-unsigned long getRegisterSourceA(unsigned long instruction);
-unsigned long getRegisterSourceB(unsigned long instruction);
-unsigned long getRegisterDestination(unsigned long instruction);
-unsigned long getRegisterAddressMemory(unsigned long instruction);
 
 unsigned int get_in_cache(unsigned int inst_addr);
 unsigned int load_cache(unsigned int inst_addr);
 
 
 /*
-   trocar o if por switch
-
    carregar de um arquivo -> programa memory
-
 */
 
 int main()
@@ -223,41 +216,58 @@ void decode(void)
 {	
 	InstructionType = getInstructionType(Instruction);
 	cout << "InstructionType: " << InstructionType << endl;
+	
+	switch( InstructionType )
+	{
+		// Soma
+		case 1:
+			RegisterSourceA = Instruction >> 16;
+			RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
+			cout << "RegisterSourceA: " << RegisterSourceA << endl;		
 
-	if (InstructionType == 1 || InstructionType == 3)
-	{
-		// Soma, Subtracao
-		RegisterSourceA = Instruction >> 16;
-		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
-		cout << "RegisterSourceA: " << RegisterSourceA << endl;
+        	RegisterSourceB = Instruction >> 8;
+			RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
+			cout << "RegisterSourceB: " << RegisterSourceB << endl;
+					
+			RegisterDestination = Instruction >> 24;
+			cout << "RegisterDestination: " << RegisterDestination << endl;
+			break;
 		
+		// Substração
+		case 3:
+			RegisterSourceA = Instruction >> 16;
+			RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
+			cout << "RegisterSourceA: " << RegisterSourceA << endl;		
 
-		RegisterSourceB = Instruction >> 8;
-		RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
-		cout << "RegisterSourceB: " << RegisterSourceB << endl;
+        	RegisterSourceB = Instruction >> 8;
+			RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
+			cout << "RegisterSourceB: " << RegisterSourceB << endl;
+					
+			RegisterDestination = Instruction >> 24;
+			cout << "RegisterDestination: " << RegisterDestination << endl;
+			break;		
 		
-		RegisterDestination = Instruction >> 24;
-		cout << "RegisterDestination: " << RegisterDestination << endl;
-	}
-	else if (InstructionType == 8)
-	{
-		/* Load */
-		RegisterDestination = Instruction >> 8;
-		RegisterDestination = RegisterDestination & 0b00000000000000000000000011111111;
-		cout << "RegisterDestination: " << RegisterDestination << endl;
-		RegisterAddressMemory = Instruction >> 16;
-		RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
-		cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
-	}
-	else if (InstructionType == 9)
-	{
-		/* Store */
-		RegisterSourceA = Instruction >> 8;
-		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
-		cout << "RegisterSourceA: " << RegisterSourceA << endl;
-		RegisterAddressMemory = Instruction >> 16;
-		RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
-		cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
+		// Load
+		case 8:
+			RegisterDestination = Instruction >> 8;
+			RegisterDestination = RegisterDestination & 0b00000000000000000000000011111111;
+			cout << "RegisterDestination: " << RegisterDestination << endl;
+			
+			RegisterAddressMemory = Instruction >> 16;
+			RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
+			cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
+			break;
+		
+        // Store
+		case 9:
+			RegisterSourceA = Instruction >> 8;
+			RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
+			cout << "RegisterSourceA: " << RegisterSourceA << endl;
+			
+			RegisterAddressMemory = Instruction >> 16;
+			RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
+			cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
+			break;			
 	}
 }
 
