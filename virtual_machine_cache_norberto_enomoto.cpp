@@ -53,7 +53,61 @@ Detalhes do set de Instructionuções
 			memória 10 (0000000000001010 >> end. memória) para o registro 0
 			(00000000 >> end. Reg )
 
+*******************************************************************************
+
+   Cache de instrução
+   
+   
+   Numero de linhas de cache: 2
+   
+   
+    Cada linha da cache possui: (definida na struct LineMemoryCacheStruct)
+    
+    Bit de validação
+    Campo para TAG
+    2 words de data
+    
+********************************************************************************    
+    
+    Calculo do BYTE, Word, Linha e TAG  a partir do endereço de memória solicitado
+    
+    Cada endereço solicitado possui 2 bytes (16 bits - quantidades de bits usada 
+	nesta arquitetura)
+	
+	0b 0000 0000 0000 0000 (end. 0)
+	
+	BYTE: Para o campo BYTE não teremos nenhum bit reservado, pois como minha 
+	estrutura trabalha com 16 bits e cada posição da memória de instrução possui
+	16 bits, será necessária a leitura de apenas um endereço para obter uma 
+	WORD completa.
+	
+	WORD: Cada linha de cache suporta salvar duas WORDs, portanto 1 bit do endereço
+	sera utilizado para identificar qual WORD  a CPU deseja
+	
+	LINE: A cache projetada possui apenas 2 linhas, portanto será nencesário apenas
+	1 bit para endereçar a linha
+	
+	TAG: É o que sobra.... 14 bits (16 bits (total) - 1 bit (LINE) - 1 bit (WORD)).
+	
+	
+	0b 0000 0000 0000 00 |       0      |   0
+         (TAG - 14 bits)  (LINE - 1 bit)  (WORD - 1 bit) 
+	
+	Exemplo de enderaçamento na cache: 
+	
+	Suponha que a CPU solicitou a instrução que esta no endereço 
+	0b 0000 0000 0000 0011 (end. 3)
+	
+		0b 0000 0000 0000 00 |       1      |   1
+         (TAG - 14 bits)      (LINE - 1 bit)  (WORD - 1 bit)
+         
+         
+    Este endereço deve ser procurado na linha 1 da cache e a TAG deve estar com o
+    valor 0. Caso ocorra sucesso (a TAG presente na linha 1 seja igual a esperada)
+    deve ser lido a WORD 1
+
 ********************************************************************************/
+
 
 #include <iostream>
 
