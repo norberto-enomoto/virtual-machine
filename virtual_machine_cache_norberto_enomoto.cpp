@@ -56,52 +56,52 @@ Detalhes do set de Instructionuções
 *******************************************************************************
 
    Cache de instrução
-   
-   
+
+
    Numero de linhas de cache: 2
-   
-   
+
+
     Cada linha da cache possui: (definida na struct LineMemoryCacheStruct)
-    
+
     Bit de validação
     Campo para TAG
     2 words de data
-    
-********************************************************************************    
-    
+
+********************************************************************************
+
     Calculo do BYTE, Word, Linha e TAG  a partir do endereço de memória solicitado
-    
-    Cada endereço solicitado possui 2 bytes (16 bits - quantidades de bits usada 
+
+    Cada endereço solicitado possui 2 bytes (16 bits - quantidades de bits usada
 	nesta arquitetura)
-	
+
 	0b 0000 0000 0000 0000 (end. 0)
-	
-	BYTE: Para o campo BYTE não teremos nenhum bit reservado, pois como minha 
+
+	BYTE: Para o campo BYTE não teremos nenhum bit reservado, pois como minha
 	estrutura trabalha com 16 bits e cada posição da memória de instrução possui
-	16 bits, será necessária a leitura de apenas um endereço para obter uma 
+	16 bits, será necessária a leitura de apenas um endereço para obter uma
 	WORD completa.
-	
+
 	WORD: Cada linha de cache suporta salvar duas WORDs, portanto 1 bit do endereço
 	sera utilizado para identificar qual WORD  a CPU deseja
-	
+
 	LINE: A cache projetada possui apenas 2 linhas, portanto será nencesário apenas
 	1 bit para endereçar a linha
-	
+
 	TAG: É o que sobra.... 14 bits (16 bits (total) - 1 bit (LINE) - 1 bit (WORD)).
-	
-	
+
+
 	0b 0000 0000 0000 00 |       0      |   0
-         (TAG - 14 bits)  (LINE - 1 bit)  (WORD - 1 bit) 
-	
-	Exemplo de enderaçamento na cache: 
-	
-	Suponha que a CPU solicitou a instrução que esta no endereço 
+         (TAG - 14 bits)  (LINE - 1 bit)  (WORD - 1 bit)
+
+	Exemplo de enderaçamento na cache:
+
+	Suponha que a CPU solicitou a instrução que esta no endereço
 	0b 0000 0000 0000 0011 (end. 3)
-	
+
 		0b 0000 0000 0000 00 |       1      |   1
          (TAG - 14 bits)      (LINE - 1 bit)  (WORD - 1 bit)
-         
-         
+
+
     Este endereço deve ser procurado na linha 1 da cache e a TAG deve estar com o
     valor 0. Caso ocorra sucesso (a TAG presente na linha 1 seja igual a esperada)
     deve ser lido a WORD 1
@@ -118,20 +118,20 @@ typedef struct LineMemoryCache
 {
 	bool 			bValid;
 	unsigned int	Tag;
-	unsigned int 	Data[2]; 
-}LineMemoryCacheStruct;
+	unsigned int 	Data[2];
+} LineMemoryCacheStruct;
 
 
 // Memoria de programa
 unsigned long ProgramMemory[] = {0b00000000000000000000000000001000,
-                                  0b00000000000000010000000100001000,
-                                  0b00000010000000000000000100000001,
-                                  0b00000000000000100000001000001001,
-                                  0b00000000000000100000000000001000,
-                                  0b00000000000000010000000100001000,
-                                  0b00000010000000000000000100000001,
-                                  0b00000000000000110000001000001001
-                                  };
+								 0b00000000000000010000000100001000,
+								 0b00000010000000000000000100000001,
+								 0b00000000000000100000001000001001,
+								 0b00000000000000100000000000001000,
+								 0b00000000000000010000000100001000,
+								 0b00000010000000000000000100000001,
+								 0b00000000000000110000001000001001
+								};
 
 
 /*
@@ -140,7 +140,7 @@ unsigned long ProgramMemory[] = {0b00000000000000000000000000001000,
 								 0b00000010000000000000000100000001,
 								 0b00000000000000100000001000001001,
 								};
-*/								
+*/
 
 
 // Memoria de dados
@@ -174,7 +174,7 @@ unsigned int load_cache(unsigned int inst_addr);
    getRegisterAddressMemory
 
    trocar o if por switch
-   
+
    carregar de um arquivo -> programa memory
 
 */
@@ -191,7 +191,7 @@ int main()
 	{
 		Register[i] = 0;
 	}
-	
+
 	for(i = 0; i < 2; i++)
 	{
 		MemoryCache[i].bValid = false;
@@ -201,9 +201,9 @@ int main()
 	{
 		// busca da Instrução
 		// Instruction = ProgramMemory[ProgramCounter];
-		
+
 		Instruction = get_in_cache(ProgramCounter);//ProgMemory[PC]; // busca da instrução
-		
+
 		ProgramCounter = ProgramCounter + 1;
 		// decodicação
 		decode();
@@ -220,8 +220,6 @@ int main()
 
 void decode(void)
 {
-	// InstructionType = Instruction << 24;
-	// InstructionType = Instruction & 0xFF;
 	InstructionType = Instruction & 0b00000000000000000000000011111111;
 	cout << "InstructionType: " << InstructionType << endl;
 
@@ -280,29 +278,6 @@ void evaluate(void)
 		DataMemory[RegisterAddressMemory] = Register[RegisterSourceA];
 		break;
 	}
-
-	/*
-	if (InstructionType == 1)
-	{
-	    // Soma
-	    Register[RegisterDestination] = Register[RegisterSourceA] + Register[RegisterSourceB];
-	}
-	else if (InstructionType == 3)
-	{
-	    // Subtracao
-	    Register[RegisterDestination] = Register[RegisterSourceA] - Register[RegisterSourceB];
-	}
-	else if (InstructionType == 8)
-	{
-	    // Load
-	    Register[RegisterDestination] = DataMemory[RegisterAddressMemory];
-	}
-	else if (InstructionType == 9)
-	{
-	    // Store
-	    DataMemory[RegisterAddressMemory] = Register[RegisterSourceA];
-	}
-	*/
 }
 
 unsigned int get_in_cache(unsigned int inst_addr)
@@ -310,12 +285,12 @@ unsigned int get_in_cache(unsigned int inst_addr)
 	unsigned char Line, Word;
 	unsigned int Tag;
 	unsigned int InstAux;
-	
+
 	Word = inst_addr & 0x01;
 	Line = inst_addr >> 1;
 	Line &= 0x01;
 	Tag = inst_addr >> 2;
-	
+
 	if(MemoryCache[Line].bValid)
 	{
 		if(MemoryCache[Line].Tag == Tag)
@@ -325,7 +300,7 @@ unsigned int get_in_cache(unsigned int inst_addr)
 		else InstAux = load_cache(inst_addr);
 	}
 	else InstAux = load_cache(inst_addr);
-	
+
 	return InstAux;
 }
 
@@ -335,20 +310,23 @@ unsigned int load_cache(unsigned int inst_addr)
 	unsigned int Tag;
 	unsigned int InstAux;
 	unsigned int AuxInstAdd;
-	
-	
+
+
 	Word = inst_addr & 0x01;
 	Line = inst_addr >> 1;
 	Line &= 0x01;
 	Tag = inst_addr >> 2;
-	
+
 	MemoryCache[Line].bValid = true;
 	MemoryCache[Line].Tag = Tag;
 	AuxInstAdd = inst_addr - Word;
 	for(i = 0; i < 2; i++)
 	{
 		MemoryCache[Line].Data[i] = ProgramMemory[AuxInstAdd + i];
-		if((AuxInstAdd + i) == inst_addr)InstAux = ProgramMemory[AuxInstAdd + i];
+		if((AuxInstAdd + i) == inst_addr)
+		{
+			InstAux = ProgramMemory[AuxInstAdd + i];
+		}
 	}
 
 	return InstAux;
