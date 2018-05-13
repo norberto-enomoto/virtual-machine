@@ -171,13 +171,12 @@ unsigned int load_cache(unsigned long inst_addr);
 
 /*
    carregar de um arquivo -> programa memory
+   adicionar 2 operaçoes -> && e ||
 */
 
 int main()
 {
 	unsigned char i;
-
-	cout << "interpreter_norberto" << endl;
 
 	// Inicializacao dos registros
 	ProgramCounter = 0;
@@ -204,6 +203,7 @@ int main()
 		evaluate();
 	}
 
+    cout << "------------------------------------" << endl;
 	for (int i = 0; i < 10; i++)
 	{
 		cout << "Register[" << i << "]: " << Register[i] << endl;
@@ -215,6 +215,8 @@ int main()
 void decode(void)
 {
 	InstructionType = getInstructionType(Instruction);
+	// cout << "------------------------------------" << endl;
+	cout << "Instruction....: " << Instruction << endl;
 	cout << "InstructionType: " << InstructionType << endl;
 
 	switch( InstructionType )
@@ -269,6 +271,8 @@ void decode(void)
 		cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
 		break;
 	}
+	
+    // cout << "------------------------------------" << endl;
 }
 
 void evaluate(void)
@@ -310,15 +314,30 @@ unsigned int get_in_cache(unsigned long inst_addr)
 	Line &= 0x01;
 	Tag = inst_addr >> 2;
 
+	cout << "------------------------------------" << endl;
+	
 	if(MemoryCache[Line].bValid)
 	{
 		if(MemoryCache[Line].Tag == Tag)
 		{
-			InstAux = MemoryCache[Line].Data[Word];
+		   InstAux = MemoryCache[Line].Data[Word];
+		   cout << "InstAux: " << "MemoryCache[" << (int)Line << 
+		           "].Data[" << int(Word) << "]" << ": " << InstAux << endl;
 		}
-		else InstAux = load_cache(inst_addr);
+		else
+		{
+  		   InstAux = load_cache(inst_addr);
+		   cout << "InstAux: " << "load_cache(" << inst_addr << ")" 
+		        << ": " << InstAux << endl; 	 	
+		} 
+		
 	}
-	else InstAux = load_cache(inst_addr);
+	else
+    {
+  	   InstAux = load_cache(inst_addr);
+       cout << "InstAux: " << "load_cache(" << inst_addr << ")" 
+	        << ": " << InstAux << endl;
+	}	
 
 	return InstAux;
 }
@@ -342,9 +361,11 @@ unsigned int load_cache(unsigned long inst_addr)
 	for(i = 0; i < 2; i++)
 	{
 		MemoryCache[Line].Data[i] = ProgramMemory[AuxInstAdd + i];
+		cout << "MemoryCache[" << (int)Line << "].Data[" << (int)i << "]: " << ProgramMemory[AuxInstAdd + i] << endl; 
 		if((AuxInstAdd + i) == inst_addr)
 		{
 			InstAux = ProgramMemory[AuxInstAdd + i];
+			cout << "InstAux: " << InstAux << endl;  
 		}
 	}
 
