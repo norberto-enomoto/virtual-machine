@@ -117,8 +117,8 @@ using namespace std;
 typedef struct LineMemoryCache
 {
 	bool 			bValid;
-	unsigned int	Tag;
-	unsigned int 	Data[2];
+	unsigned long	Tag;
+	unsigned long 	Data[2];
 } LineMemoryCacheStruct;
 
 
@@ -158,6 +158,9 @@ unsigned long getInstructionType(unsigned long instruction);
 unsigned int get_in_cache(unsigned long inst_addr);
 unsigned int load_cache(unsigned long inst_addr);
 
+void printDataMemory();
+void printRegister();
+
 
 /*
    carregar de um arquivo -> programa memory
@@ -191,12 +194,9 @@ int main()
 		// decodicação
 		decode();
 		evaluate();
-	}
-
-	cout << "------------------------------------" << endl;
-	for (int i = 0; i < 10; i++)
-	{
-		cout << "Register[" << i << "]: " << Register[i] << endl;
+		
+		printDataMemory();
+		printRegister();
 	}
 
 	return 0;
@@ -205,64 +205,65 @@ int main()
 void decode(void)
 {
 	InstructionType = getInstructionType(Instruction);
-	// cout << "------------------------------------" << endl;
-	cout << "Instruction....: " << Instruction << endl;
-	cout << "InstructionType: " << InstructionType << endl;
+	cout << "decode->Instruction....: " << Instruction << endl;
+	cout << "decode->InstructionType: " << InstructionType << endl;
 
 	switch( InstructionType )
 	{
-		// Soma
-	case 1:
+	// Soma
+	case 1:		
+		cout << "decode->Soma(1)" << endl;
 		RegisterSourceA = Instruction >> 16;
 		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
-		cout << "RegisterSourceA: " << RegisterSourceA << endl;
+		cout << "decode->RegisterSourceA: " << RegisterSourceA << endl;
 
 		RegisterSourceB = Instruction >> 8;
 		RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
-		cout << "RegisterSourceB: " << RegisterSourceB << endl;
+		cout << "decode->RegisterSourceB: " << RegisterSourceB << endl;
 
 		RegisterDestination = Instruction >> 24;
-		cout << "RegisterDestination: " << RegisterDestination << endl;
+		cout << "decode->RegisterDestination: " << RegisterDestination << endl;
 		break;
 
-		// Substração
+	// Substração
 	case 3:
+        cout << "decode->Subtracao(3)" << endl;
 		RegisterSourceA = Instruction >> 16;
 		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
-		cout << "RegisterSourceA: " << RegisterSourceA << endl;
+		cout << "decode->RegisterSourceA: " << RegisterSourceA << endl;
 
 		RegisterSourceB = Instruction >> 8;
 		RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
-		cout << "RegisterSourceB: " << RegisterSourceB << endl;
+		cout << "decode->RegisterSourceB: " << RegisterSourceB << endl;
 
 		RegisterDestination = Instruction >> 24;
-		cout << "RegisterDestination: " << RegisterDestination << endl;
+		cout << "decode->RegisterDestination: " << RegisterDestination << endl;
 		break;
 
-		// Load
+	// Load
 	case 8:
+        cout << "decode->Load(8)" << endl;
 		RegisterDestination = Instruction >> 8;
 		RegisterDestination = RegisterDestination & 0b00000000000000000000000011111111;
-		cout << "RegisterDestination: " << RegisterDestination << endl;
+		cout << "decode->RegisterDestination: " << RegisterDestination << endl;
 
 		RegisterAddressMemory = Instruction >> 16;
 		RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
-		cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
+		cout << "decode->RegisterAddressMemory: " << RegisterAddressMemory << endl;
 		break;
 
-		// Store
+	// Store
 	case 9:
+        cout << "decode->Store(9)" << endl;
 		RegisterSourceA = Instruction >> 8;
 		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
-		cout << "RegisterSourceA: " << RegisterSourceA << endl;
+		cout << "decode->RegisterSourceA: " << RegisterSourceA << endl;
 
 		RegisterAddressMemory = Instruction >> 16;
 		RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
-		cout << "RegisterAddressMemory: " << RegisterAddressMemory << endl;
+		cout << "decode->RegisterAddressMemory: " << RegisterAddressMemory << endl;
 		break;
 	}
-
-	// cout << "------------------------------------" << endl;
 }
 
 void evaluate(void)
@@ -272,18 +273,50 @@ void evaluate(void)
 	case 1:
 		// Soma
 		Register[RegisterDestination] = Register[RegisterSourceA] + Register[RegisterSourceB];
+		
+		cout << "evaluate->Soma(1): Register[RegisterDestination] = Register[RegisterSourceA] + Register[RegisterSourceB]" << endl;
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: Register[" <<  RegisterSourceA << "] + Register[" <<
+		     RegisterSourceB << "]" << endl;
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: " << Register[RegisterSourceA] << " + " << Register[RegisterSourceB]
+			 << endl;
+		     
 		break;
 	case 3:
 		// Subtracao
 		Register[RegisterDestination] = Register[RegisterSourceA] - Register[RegisterSourceB];
+
+		cout << "evaluate->Subtracao(3): Register[RegisterDestination] = Register[RegisterSourceA] - Register[RegisterSourceB]" << endl;		
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: Register[" <<  RegisterSourceA << "] - Register[" <<
+		     RegisterSourceB << "]" << endl;
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: " << Register[RegisterSourceA] << " - " << Register[RegisterSourceB]
+			 << endl;
+		
 		break;
 	case 8:
 		// Load
 		Register[RegisterDestination] = DataMemory[RegisterAddressMemory];
+		
+		cout << "evaluate->Load(8): Register[RegisterDestination] = DataMemory[RegisterAddressMemory]" << endl;;
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: DataMemory[" <<  RegisterAddressMemory << "]" << endl;
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: " << DataMemory[RegisterAddressMemory] << endl;
+		
 		break;
 	case 9:
 		// Store
 		DataMemory[RegisterAddressMemory] = Register[RegisterSourceA];
+
+		cout << "evaluate->Store(9): DataMemory[RegisterAddressMemory] = Register[RegisterSourceA]" << endl;
+		cout << "evaluate->DataMemory[" << RegisterAddressMemory << 
+		     "]: Register[" <<  RegisterSourceA << "]" << endl;
+		cout << "evaluate->DataMemory[" << RegisterAddressMemory << 
+		     "]: " << Register[RegisterSourceA] << endl;
+		
 		break;
 	}
 }
@@ -304,20 +337,20 @@ unsigned int get_in_cache(unsigned long inst_addr)
 	Line &= 0x01;
 	Tag = inst_addr >> 2;
 
-	cout << "------------------------------------" << endl;
+	cout << "<---------------------------------------------------->" << endl;
 
 	if(MemoryCache[Line].bValid)
 	{
 		if(MemoryCache[Line].Tag == Tag)
 		{
 			InstAux = MemoryCache[Line].Data[Word];
-			cout << "InstAux: " << "MemoryCache[" << (int)Line <<
+			cout << "get_in_cache->InstAux: " << "MemoryCache[" << (int)Line <<
 				 "].Data[" << int(Word) << "]" << ": " << InstAux << endl;
 		}
 		else
 		{
 			InstAux = load_cache(inst_addr);
-			cout << "InstAux: " << "load_cache(" << inst_addr << ")"
+			cout << "get_in_cache->InstAux: " << "load_cache(" << inst_addr << ")"
 				 << ": " << InstAux << endl;
 		}
 
@@ -325,7 +358,7 @@ unsigned int get_in_cache(unsigned long inst_addr)
 	else
 	{
 		InstAux = load_cache(inst_addr);
-		cout << "InstAux: " << "load_cache(" << inst_addr << ")"
+		cout << "get_in_cache->InstAux: " << "load_cache(" << inst_addr << ")"
 			 << ": " << InstAux << endl;
 	}
 
@@ -351,14 +384,30 @@ unsigned int load_cache(unsigned long inst_addr)
 	for(i = 0; i < 2; i++)
 	{
 		MemoryCache[Line].Data[i] = ProgramMemory[AuxInstAdd + i];
-		cout << "MemoryCache[" << (int)Line << "].Data[" << (int)i << "]: " << ProgramMemory[AuxInstAdd + i] << endl;
+		cout << "load_cache->MemoryCache[" << (int)Line << "].Data[" << (int)i << "]: " << ProgramMemory[AuxInstAdd + i] << endl;
 		if((AuxInstAdd + i) == inst_addr)
 		{
 			InstAux = ProgramMemory[AuxInstAdd + i];
-			cout << "InstAux: " << InstAux << endl;
+			cout << "load_cache->InstAux: " << InstAux << endl;
 		}
 	}
 
 	return InstAux;
 }
 
+void printDataMemory()
+{	
+    for (int i = 0; i < 8; i++)
+	{
+		cout << "DataMemory[" << i << "]: " << DataMemory[i] << endl;
+	}
+
+}
+
+void printRegister()
+{	
+	for (int i = 0; i < 10; i++)
+	{
+		cout << "Register[" << i << "]: " << Register[i] << endl;
+	}
+}
