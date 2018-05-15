@@ -3,14 +3,14 @@
 Máquina Virtual - IOT010
 
 	Este codigo implementa uma máquina virtual (interpretador) capaz de buscar,
-decodificar e executar um set de Instructionuções criado exclusivamente para demonstração
+decodificar e executar um set de instruções criado exclusivamente para demonstração
 durante as aulas de IOT010.
 
 ***********************************************************************************
 
 Detalhes do set de Instructionuções
 
-	Tamanho das Instructionuções 32 bits
+	Tamanho das Instruções32 bits
 
 	Código das intruções:
 
