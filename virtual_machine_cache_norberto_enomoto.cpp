@@ -150,26 +150,58 @@ unsigned long RegisterAddressMemory;
 unsigned long Register[10];
 
 // Prototipos
+void initVariables(void);
 void decode(void);
 void evaluate(void);
 
 unsigned long getInstructionType(unsigned long instruction);
 
-unsigned int get_in_cache(unsigned long inst_addr);
-unsigned int load_cache(unsigned long inst_addr);
+unsigned long getFromCache(unsigned long inst_addr);
+unsigned long loadCache(unsigned long inst_addr);
 
+void printProgramMemory();
 void printDataMemory();
 void printRegister();
 
 
 /*
    carregar de um arquivo -> programa memory
-   adicionar 2 operaçoes -> && e ||
+   adicionar 2 operaçoes -> & e |
+   https://www.embarcados.com.br/operacao-logica-and-no-mips/
+   https://www.embarcados.com.br/operacao-logica-or-no-mips/
+   
+   verificar para mudar a cache Data[2] -> Data[4]
+   e o for de i < 4 
+   
 */
 
 int main()
 {
-	unsigned char i;
+
+    initVariables();
+    
+	while (ProgramCounter < 8)
+	{
+		// busca da Instrução
+		// Instruction = ProgramMemory[ProgramCounter];
+
+		Instruction = getFromCache(ProgramCounter);//ProgMemory[PC]; // busca da instrução
+
+		ProgramCounter = ProgramCounter + 1;
+		// decodicação
+		decode();
+		evaluate();
+		
+		printDataMemory();
+		printRegister();
+	}
+
+	return 0;
+}
+
+void initVariables()
+{
+    unsigned char i;
 
 	// Inicializacao dos registros
 	ProgramCounter = 0;
@@ -182,24 +214,8 @@ int main()
 	{
 		MemoryCache[i].bValid = false;
 	}
-
-	while (ProgramCounter < 8)
-	{
-		// busca da Instrução
-		// Instruction = ProgramMemory[ProgramCounter];
-
-		Instruction = get_in_cache(ProgramCounter);//ProgMemory[PC]; // busca da instrução
-
-		ProgramCounter = ProgramCounter + 1;
-		// decodicação
-		decode();
-		evaluate();
-		
-		printDataMemory();
-		printRegister();
-	}
-
-	return 0;
+	
+	printProgramMemory();
 }
 
 void decode(void)
@@ -326,7 +342,7 @@ unsigned long getInstructionType(unsigned long instruction)
 	return instruction & 0b00000000000000000000000011111111;
 }
 
-unsigned int get_in_cache(unsigned long inst_addr)
+unsigned long getFromCache(unsigned long inst_addr)
 {
 	unsigned char Line, Word;
 	unsigned long Tag;
@@ -344,28 +360,28 @@ unsigned int get_in_cache(unsigned long inst_addr)
 		if(MemoryCache[Line].Tag == Tag)
 		{
 			InstAux = MemoryCache[Line].Data[Word];
-			cout << "get_in_cache->InstAux: " << "MemoryCache[" << (int)Line <<
+			cout << "getFromCache->InstAux: " << "MemoryCache[" << (int)Line <<
 				 "].Data[" << int(Word) << "]" << ": " << InstAux << endl;
 		}
 		else
 		{
-			InstAux = load_cache(inst_addr);
-			cout << "get_in_cache->InstAux: " << "load_cache(" << inst_addr << ")"
+			InstAux = loadCache(inst_addr);
+			cout << "getFromCache->InstAux: " << "load_cache(" << inst_addr << ")"
 				 << ": " << InstAux << endl;
 		}
 
 	}
 	else
 	{
-		InstAux = load_cache(inst_addr);
-		cout << "get_in_cache->InstAux: " << "load_cache(" << inst_addr << ")"
+		InstAux = loadCache(inst_addr);
+		cout << "getFromCache->InstAux: " << "load_cache(" << inst_addr << ")"
 			 << ": " << InstAux << endl;
 	}
 
 	return InstAux;
 }
 
-unsigned int load_cache(unsigned long inst_addr)
+unsigned long loadCache(unsigned long inst_addr)
 {
 	unsigned char Line, Word, i;
 	unsigned long Tag;
@@ -384,15 +400,24 @@ unsigned int load_cache(unsigned long inst_addr)
 	for(i = 0; i < 2; i++)
 	{
 		MemoryCache[Line].Data[i] = ProgramMemory[AuxInstAdd + i];
-		cout << "load_cache->MemoryCache[" << (int)Line << "].Data[" << (int)i << "]: " << ProgramMemory[AuxInstAdd + i] << endl;
+		cout << "loadCache->MemoryCache[" << (int)Line << "].Data[" << (int)i << "]: " << ProgramMemory[AuxInstAdd + i] << endl;
 		if((AuxInstAdd + i) == inst_addr)
 		{
 			InstAux = ProgramMemory[AuxInstAdd + i];
-			cout << "load_cache->InstAux: " << InstAux << endl;
+			cout << "loadCache->InstAux: ProgramMemory[" << AuxInstAdd + i << "]"<< endl;
 		}
 	}
 
 	return InstAux;
+}
+
+void printProgramMemory()
+{	
+	cout << "<------------------ Program Memory ------------------>" << endl;
+    for (int i = 0; i < 8; i++)
+	{
+		cout << "ProgramMemory[" << i << "]: " << ProgramMemory[i] << endl;
+	}
 }
 
 void printDataMemory()
