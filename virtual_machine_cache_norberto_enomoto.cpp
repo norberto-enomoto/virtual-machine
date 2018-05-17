@@ -10,7 +10,7 @@ durante as aulas de IOT010.
 
 Detalhes do set de Instructionuções
 
-	Tamanho das Instruções32 bits
+	Tamanho das Instruções: 32 bits
 
 	Código das intruções:
 
@@ -113,6 +113,12 @@ Detalhes do set de Instructionuções
 
 using namespace std;
 
+// Constantes
+const int __REGISTER_SIZE        = 10;
+const int __PROGRAM_MEMORY_SIZE_ = 12;
+const int __DATA_MEMORY_SIZE_    = 8;
+const int __MEMORY_CACHE_SIZE_   = 2;
+
 // Definicao da Memoria cache
 typedef struct LineMemoryCache
 {
@@ -130,14 +136,18 @@ unsigned long ProgramMemory[] = {0b00000000000000000000000000001000,
 								 0b00000000000000100000000000001000,
 								 0b00000000000000010000000100001000,
 								 0b00000010000000000000000100000001,
-								 0b00000000000000110000001000001001
+								 0b00000000000000110000001000001001,
+                                 0b00000000000001000000001100001000,
+                                 0b00000000000001010000010000001000,
+                                 0b00000101000000110000010000000100,
+                                 0b00000000000001100000010100001001
 								};
 
 // Memoria de dados
-unsigned long DataMemory[] = {1, 2, 0, 0, 0, 0, 0, 0};
+unsigned long DataMemory[] = {1, 2, 0, 0, 3328, 15360, 0, 0};
 
 // Memoria cahe
-LineMemoryCacheStruct  MemoryCache[2]; // numero de linhas da cache
+LineMemoryCacheStruct  MemoryCache[__MEMORY_CACHE_SIZE_]; // numero de linhas da cache
 
 // Registradores
 unsigned long ProgramCounter;
@@ -147,7 +157,7 @@ unsigned long RegisterSourceA;
 unsigned long RegisterSourceB;
 unsigned long RegisterDestination;
 unsigned long RegisterAddressMemory;
-unsigned long Register[10];
+unsigned long Register[__REGISTER_SIZE];
 
 // Prototipos
 void initVariables(void);
@@ -180,7 +190,7 @@ int main()
 
     initVariables();
     
-	while (ProgramCounter < 8)
+	while (ProgramCounter < __PROGRAM_MEMORY_SIZE_)
 	{
 		// busca da Instrução
 		// Instruction = ProgramMemory[ProgramCounter];
@@ -205,12 +215,12 @@ void initVariables()
 
 	// Inicializacao dos registros
 	ProgramCounter = 0;
-	for (i = 0; i < 10; i++)
+	for (i = 0; i < __REGISTER_SIZE; i++)
 	{
 		Register[i] = 0;
 	}
 
-	for(i = 0; i < 2; i++)
+	for(i = 0; i < __MEMORY_CACHE_SIZE_; i++)
 	{
 		MemoryCache[i].bValid = false;
 	}
@@ -223,12 +233,23 @@ void decode(void)
 	InstructionType = getInstructionType(Instruction);
 	cout << "decode->Instruction....: " << Instruction << endl;
 	cout << "decode->InstructionType: " << InstructionType << endl;
-
-	switch( InstructionType )
-	{
-	// Soma
-	case 1:		
-		cout << "decode->Soma(1)" << endl;
+	
+	// Soma, Subtracao
+	if (InstructionType == 1 || InstructionType == 3 || InstructionType == 4)
+	{   
+		if (InstructionType == 1)
+		{
+			cout << "decode->Soma(1)" << endl;
+		}
+		else if (InstructionType == 3)
+		{
+			cout << "decode->Subracao(3)" << endl;
+		}
+		else if (InstructionType == 4)
+        {
+			cout << "decode->Or(4)" << endl;
+		}
+		
 		RegisterSourceA = Instruction >> 16;
 		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
 		cout << "decode->RegisterSourceA: " << RegisterSourceA << endl;
@@ -239,25 +260,11 @@ void decode(void)
 
 		RegisterDestination = Instruction >> 24;
 		cout << "decode->RegisterDestination: " << RegisterDestination << endl;
-		break;
-
-	// Substração
-	case 3:
-        cout << "decode->Subtracao(3)" << endl;
-		RegisterSourceA = Instruction >> 16;
-		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
-		cout << "decode->RegisterSourceA: " << RegisterSourceA << endl;
-
-		RegisterSourceB = Instruction >> 8;
-		RegisterSourceB = RegisterSourceB & 0b00000000000000000000000011111111;
-		cout << "decode->RegisterSourceB: " << RegisterSourceB << endl;
-
-		RegisterDestination = Instruction >> 24;
-		cout << "decode->RegisterDestination: " << RegisterDestination << endl;
-		break;
-
+	}
+	
 	// Load
-	case 8:
+    else if (InstructionType == 8)
+	{
         cout << "decode->Load(8)" << endl;
 		RegisterDestination = Instruction >> 8;
 		RegisterDestination = RegisterDestination & 0b00000000000000000000000011111111;
@@ -266,10 +273,11 @@ void decode(void)
 		RegisterAddressMemory = Instruction >> 16;
 		RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
 		cout << "decode->RegisterAddressMemory: " << RegisterAddressMemory << endl;
-		break;
-
-	// Store
-	case 9:
+    }
+    
+	// Sotre
+	else if (InstructionType == 9)
+	{
         cout << "decode->Store(9)" << endl;
 		RegisterSourceA = Instruction >> 8;
 		RegisterSourceA = RegisterSourceA & 0b00000000000000000000000011111111;
@@ -278,7 +286,6 @@ void decode(void)
 		RegisterAddressMemory = Instruction >> 16;
 		RegisterAddressMemory = RegisterAddressMemory & 0b00000000000000001111111111111111;
 		cout << "decode->RegisterAddressMemory: " << RegisterAddressMemory << endl;
-		break;
 	}
 }
 
@@ -286,8 +293,8 @@ void evaluate(void)
 {
 	switch( InstructionType )
 	{
+    // Soma
 	case 1:
-		// Soma
 		Register[RegisterDestination] = Register[RegisterSourceA] + Register[RegisterSourceB];
 		
 		cout << "evaluate->Soma(1): Register[RegisterDestination] = Register[RegisterSourceA] + Register[RegisterSourceB]" << endl;
@@ -299,8 +306,9 @@ void evaluate(void)
 			 << endl;
 		     
 		break;
+	
+	// Subtracao
 	case 3:
-		// Subtracao
 		Register[RegisterDestination] = Register[RegisterSourceA] - Register[RegisterSourceB];
 
 		cout << "evaluate->Subtracao(3): Register[RegisterDestination] = Register[RegisterSourceA] - Register[RegisterSourceB]" << endl;		
@@ -312,8 +320,23 @@ void evaluate(void)
 			 << endl;
 		
 		break;
+	
+	// OR
+	case 4:
+		Register[RegisterDestination] = Register[RegisterSourceA] | Register[RegisterSourceB];
+		
+		cout << "evaluate->OR(4): Register[RegisterDestination] = Register[RegisterSourceA] | Register[RegisterSourceB]" << endl;
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: Register[" <<  RegisterSourceA << "] | Register[" <<
+		     RegisterSourceB << "]" << endl;
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: " << Register[RegisterSourceA] << " | " << Register[RegisterSourceB]
+			 << endl;
+		     
+		break;
+	
+	// Load
 	case 8:
-		// Load
 		Register[RegisterDestination] = DataMemory[RegisterAddressMemory];
 		
 		cout << "evaluate->Load(8): Register[RegisterDestination] = DataMemory[RegisterAddressMemory]" << endl;;
@@ -323,8 +346,9 @@ void evaluate(void)
 		     "]: " << DataMemory[RegisterAddressMemory] << endl;
 		
 		break;
+	
+	// Store
 	case 9:
-		// Store
 		DataMemory[RegisterAddressMemory] = Register[RegisterSourceA];
 
 		cout << "evaluate->Store(9): DataMemory[RegisterAddressMemory] = Register[RegisterSourceA]" << endl;
@@ -414,7 +438,7 @@ unsigned long loadCache(unsigned long inst_addr)
 void printProgramMemory()
 {	
 	cout << "<------------------ Program Memory ------------------>" << endl;
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < __PROGRAM_MEMORY_SIZE_; i++)
 	{
 		cout << "ProgramMemory[" << i << "]: " << ProgramMemory[i] << endl;
 	}
@@ -422,7 +446,7 @@ void printProgramMemory()
 
 void printDataMemory()
 {	
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < __DATA_MEMORY_SIZE_; i++)
 	{
 		cout << "DataMemory[" << i << "]: " << DataMemory[i] << endl;
 	}
@@ -431,7 +455,7 @@ void printDataMemory()
 
 void printRegister()
 {	
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < __REGISTER_SIZE; i++)
 	{
 		cout << "Register[" << i << "]: " << Register[i] << endl;
 	}
