@@ -169,6 +169,7 @@ unsigned long Register[__REGISTER_SIZE];
 
 // Prototipos
 void initVariables(void);
+long fetch();
 void decode(void);
 void evaluate(void);
 
@@ -203,9 +204,11 @@ int main()
 		// busca da Instrução
 		// Instruction = ProgramMemory[ProgramCounter];
 
-		Instruction = getFromCache(ProgramCounter);//ProgMemory[PC]; // busca da instrução
-
-		ProgramCounter = ProgramCounter + 1;
+		// Instruction = getFromCache(ProgramCounter);//ProgMemory[PC]; // busca da instrução
+        // ProgramCounter = ProgramCounter + 1;
+        
+        fetch();
+        
 		// decodicação
 		decode();
 		evaluate();
@@ -234,6 +237,14 @@ void initVariables()
 	}
 	
 	printProgramMemory();
+}
+
+long fetch()
+{
+	// busca a instrucao
+	Instruction = getFromCache(ProgramCounter);
+    ProgramCounter = ProgramCounter + 1;
+    return Instruction;
 }
 
 void decode(void)
