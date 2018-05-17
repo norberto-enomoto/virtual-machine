@@ -14,9 +14,11 @@ Detalhes do set de Instructionuções
 
 	Código das intruções:
 
-		ADD: 	0000001
-		SUB: 	0000011
-		LOAD: 	0001000
+		ADD..: 	0000001
+		SUB..: 	0000011
+		OR...:  0000100
+		AND..:  0000101
+		LOAD.: 	0001000
 		STORE:	0001001
 
 	Instruções Tipo 1:
@@ -115,16 +117,18 @@ using namespace std;
 
 // Constantes
 const int __REGISTER_SIZE        = 10;
-const int __PROGRAM_MEMORY_SIZE_ = 12;
+const int __PROGRAM_MEMORY_SIZE_ = 16;
 const int __DATA_MEMORY_SIZE_    = 8;
-const int __MEMORY_CACHE_SIZE_   = 2;
 
+const int __MEMORY_CACHE_SIZE_   = 2;
+const int __WORD_SIZE_           = 2;
+;
 // Definicao da Memoria cache
 typedef struct LineMemoryCache
 {
 	bool 			bValid;
 	unsigned long	Tag;
-	unsigned long 	Data[2];
+	unsigned long 	Data[__WORD_SIZE_];
 } LineMemoryCacheStruct;
 
 
@@ -140,7 +144,11 @@ unsigned long ProgramMemory[] = {0b00000000000000000000000000001000,
                                  0b00000000000001000000001100001000,
                                  0b00000000000001010000010000001000,
                                  0b00000101000000110000010000000100,
-                                 0b00000000000001100000010100001001
+                                 0b00000000000001100000010100001001,
+                                 0b00000000000001000000001100001000,
+                                 0b00000000000001010000010000001000,
+                                 0b00000101000000110000010000000101,
+                                 0b00000000000001110000010100001001
 								};
 
 // Memoria de dados
@@ -235,7 +243,8 @@ void decode(void)
 	cout << "decode->InstructionType: " << InstructionType << endl;
 	
 	// Soma, Subtracao
-	if (InstructionType == 1 || InstructionType == 3 || InstructionType == 4)
+	if (InstructionType == 1 || InstructionType == 3 
+	    || InstructionType == 4 || InstructionType == 5)
 	{   
 		if (InstructionType == 1)
 		{
@@ -248,6 +257,10 @@ void decode(void)
 		else if (InstructionType == 4)
         {
 			cout << "decode->Or(4)" << endl;
+		}
+        else if (InstructionType == 5)
+        {
+			cout << "decode->And(5)" << endl;
 		}
 		
 		RegisterSourceA = Instruction >> 16;
@@ -321,16 +334,30 @@ void evaluate(void)
 		
 		break;
 	
-	// OR
+	// Or
 	case 4:
 		Register[RegisterDestination] = Register[RegisterSourceA] | Register[RegisterSourceB];
 		
-		cout << "evaluate->OR(4): Register[RegisterDestination] = Register[RegisterSourceA] | Register[RegisterSourceB]" << endl;
+		cout << "evaluate->Or(4): Register[RegisterDestination] = Register[RegisterSourceA] | Register[RegisterSourceB]" << endl;
 		cout << "evaluate->Register[" << RegisterDestination << 
 		     "]: Register[" <<  RegisterSourceA << "] | Register[" <<
 		     RegisterSourceB << "]" << endl;
 		cout << "evaluate->Register[" << RegisterDestination << 
 		     "]: " << Register[RegisterSourceA] << " | " << Register[RegisterSourceB]
+			 << endl;
+		     
+		break;
+	
+    // And
+	case 5:
+		Register[RegisterDestination] = Register[RegisterSourceA] & Register[RegisterSourceB];
+		
+		cout << "evaluate->And(5): Register[RegisterDestination] = Register[RegisterSourceA] & Register[RegisterSourceB]" << endl;
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: Register[" <<  RegisterSourceA << "] & Register[" <<
+		     RegisterSourceB << "]" << endl;
+		cout << "evaluate->Register[" << RegisterDestination << 
+		     "]: " << Register[RegisterSourceA] << " & " << Register[RegisterSourceB]
 			 << endl;
 		     
 		break;
@@ -421,7 +448,7 @@ unsigned long loadCache(unsigned long inst_addr)
 	MemoryCache[Line].bValid = true;
 	MemoryCache[Line].Tag = Tag;
 	AuxInstAdd = inst_addr - Word;
-	for(i = 0; i < 2; i++)
+	for(i = 0; i < __WORD_SIZE_; i++)
 	{
 		MemoryCache[Line].Data[i] = ProgramMemory[AuxInstAdd + i];
 		cout << "loadCache->MemoryCache[" << (int)Line << "].Data[" << (int)i << "]: " << ProgramMemory[AuxInstAdd + i] << endl;
