@@ -169,7 +169,6 @@ unsigned long Register[__REGISTER_SIZE];
 
 // Prototipos
 void initVariables(void);
-long fetch();
 void decode(void);
 void evaluate(void);
 
@@ -183,36 +182,15 @@ void printDataMemory();
 void printRegister();
 
 
-/*
-   carregar de um arquivo -> programa memory
-   adicionar 2 operaçoes -> & e |
-   https://www.embarcados.com.br/operacao-logica-and-no-mips/
-   https://www.embarcados.com.br/operacao-logica-or-no-mips/
-   
-   verificar para mudar a cache Data[2] -> Data[4]
-   e o for de i < 4 
-   
-*/
-
 int main()
 {
-
     initVariables();
-    
-	while (ProgramCounter < __PROGRAM_MEMORY_SIZE_)
+    while (ProgramCounter < __PROGRAM_MEMORY_SIZE_)
 	{
-		// busca da Instrução
-		// Instruction = ProgramMemory[ProgramCounter];
-
-		// Instruction = getFromCache(ProgramCounter);//ProgMemory[PC]; // busca da instrução
-        // ProgramCounter = ProgramCounter + 1;
-        
-        fetch();
-        
-		// decodicação
+        Instruction = getFromCache(ProgramCounter);//ProgMemory[PC]; // busca da instrução
+        ProgramCounter = ProgramCounter + 1;
 		decode();
 		evaluate();
-		
 		printDataMemory();
 		printRegister();
 	}
@@ -224,27 +202,20 @@ void initVariables()
 {
     unsigned char i;
 
-	// Inicializacao dos registros
+	// Inicialização dos registradores
 	ProgramCounter = 0;
 	for (i = 0; i < __REGISTER_SIZE; i++)
 	{
 		Register[i] = 0;
 	}
 
+	// Inicialização da memória cache
 	for(i = 0; i < __MEMORY_CACHE_SIZE_; i++)
 	{
 		MemoryCache[i].bValid = false;
 	}
 	
 	printProgramMemory();
-}
-
-long fetch()
-{
-	// busca a instrucao
-	Instruction = getFromCache(ProgramCounter);
-    ProgramCounter = ProgramCounter + 1;
-    return Instruction;
 }
 
 void decode(void)
