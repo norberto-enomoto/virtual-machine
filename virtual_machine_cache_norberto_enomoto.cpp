@@ -5,6 +5,7 @@ Máquina Virtual
 Aluno......: Norbero Hideaki Enomoto
 Disciplinha: IoT010 - Arquiteturas de Computadores, 
              Sistemas Microprocessados e Microcontrolados
+Professor..: Gabriel Dias Scarpioni
 
 Este codigo implementa uma máquina virtual (interpretador) capaz de buscar,
 decodificar e executar um set de instruções de 32 bits.
