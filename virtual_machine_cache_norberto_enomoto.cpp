@@ -1,22 +1,22 @@
 /********************************************************************************
 
-Máquina Virtual
+MÃ¡quina Virtual
 
-Aluno......: Norbero Hideaki Enomoto
+Aluno......: Norberto Hideaki Enomoto
 Disciplinha: IoT010 - Arquiteturas de Computadores, 
              Sistemas Microprocessados e Microcontrolados
 Professor..: Gabriel Dias Scarpioni
 
-Este codigo implementa uma máquina virtual (interpretador) capaz de buscar,
-decodificar e executar um set de instruções de 32 bits.
+Este codigo implementa uma mÃ¡quina virtual (interpretador) capaz de buscar,
+decodificar e executar um set de instruÃ§Ãµes de 32 bits.
 
 ***********************************************************************************
 
-Detalhes do set de Instruções
+Detalhes do set de InstruÃ§Ãµes
 
-	Tamanho das Instruções: 32 bits
+	Tamanho das InstruÃ§Ãµes: 32 bits
 
-	Código das intruções:
+	CÃ³digo das intruÃ§Ãµes:
 
 		ADD..: 	0000001
 		SUB..: 	0000011
@@ -25,42 +25,42 @@ Detalhes do set de Instruções
 		LOAD.: 	0001000
 		STORE:	0001001
 
-	Instruções Tipo 1:
+	InstruÃ§Ãµes Tipo 1:
 
-		- Utilizado para operações aritméticas (soma, subtração, or e and)
+		- Utilizado para operaÃ§Ãµes aritmÃ©ticas (soma, subtraÃ§Ã£o, or e and)
 
              MSB                                      LSB
 
-		(End Reg Dest.)  (End. Reg 1)  (End. Reg 2)  (Tipo Instrução.)
+		(End Reg Dest.)  (End. Reg 1)  (End. Reg 2)  (Tipo InstruÃ§Ã£o.)
 
            8 bits          8 bits        8 bits       8 bits
 
 
          - Exemplo: 0b00000010000000000000000100000001 >>> |00000010|00000000|00000001|00000001
 
-         	Realiza a soma (00000001 >> tipo da Instrução) do registro 0 (00000000
+         	Realiza a soma (00000001 >> tipo da InstruÃ§Ã£o) do registro 0 (00000000
  	 	 	 >> end. Reg 1) com o registro 1 (00000001 >> end. Reg 2) e salva o resultado
  	 	 	 em registro 2 (00000010 >> end. Reg Dest.)
 
 
-    Instruções Tipo 2:
+    InstruÃ§Ãµes Tipo 2:
 
-     	 - Uitlizado para operações de LOAD e STORE
+     	 - Uitlizado para operaÃ§Ãµes de LOAD e STORE
 
      	       MSB                        LSB
 
-     	  (End Memória de dados)  (End Reg) (Tipo Instrução.)
+     	  (End MemÃ³ria de dados)  (End Reg) (Tipo InstruÃ§Ã£o.)
 
 		         16 bits            8 bits     8 bits
 
        - Exemplo: 00000000000010100000000000001000 >>> |0000000000001010|00000000|00001000|
 
-         	Realiza o LOAD (00001000 >> tipo da Instrução) do endereço de
-			memória 10 (0000000000001010 >> end. memória) para o registro 0
+         	Realiza o LOAD (00001000 >> tipo da InstruÃ§Ã£o) do endereÃ§o de
+			memÃ³ria 10 (0000000000001010 >> end. memÃ³ria) para o registro 0
 			(00000000 >> end. Reg )
 
 *******************************************************************************
-   Cache de instrução
+   Cache de instruÃ§Ã£o
 
 
     Numero de linhas de cache: 2
@@ -68,45 +68,45 @@ Detalhes do set de Instruções
 
     Cada linha da cache possui: (definida na struct LineMemoryCacheStruct)
 
-    Bit de validação
+    Bit de validaÃ§Ã£o
     Campo para TAG
     2 words de data
 ********************************************************************************
 
-    Calculo do BYTE, Word, Linha e TAG  a partir do endereço de memória solicitado
+    Calculo do BYTE, Word, Linha e TAG  a partir do endereÃ§o de memÃ³ria solicitado
 
-    Cada endereço solicitado possui 4 bytes (32 bits - quantidades de bits usada
+    Cada endereÃ§o solicitado possui 4 bytes (32 bits - quantidades de bits usada
 	nesta arquitetura)
 
 	0b 00000000 00000000 00000000 00000000 (end. 0)
 
-	BYTE: Para o campo BYTE não teremos nenhum bit reservado, pois como a
-	estrutura trabalha com 32 bits e cada posição da memória de instrução possui
-	32 bits, será necessária a leitura de apenas um endereço para obter uma
+	BYTE: Para o campo BYTE nÃ£o teremos nenhum bit reservado, pois como a
+	estrutura trabalha com 32 bits e cada posiÃ§Ã£o da memÃ³ria de instruÃ§Ã£o possui
+	32 bits, serÃ¡ necessÃ¡ria a leitura de apenas um endereÃ§o para obter uma
 	WORD completa.
 
-	WORD: Cada linha de cache suporta salvar duas WORDs, portanto 1 bit do endereço
+	WORD: Cada linha de cache suporta salvar duas WORDs, portanto 1 bit do endereÃ§o
 	sera utilizado para identificar qual WORD  a CPU deseja
 
-	LINE: A cache projetada possui apenas 2 linhas, portanto será nencesário apenas
-	1 bit para endereçar a linha
+	LINE: A cache projetada possui apenas 2 linhas, portanto serÃ¡ nencesÃ¡rio apenas
+	1 bit para endereÃ§ar a linha
 
-	TAG: É o que sobra.... 30 bits (32 bits (total) - 1 bit (LINE) - 1 bit (WORD)).
+	TAG: Ã‰ o que sobra.... 30 bits (32 bits (total) - 1 bit (LINE) - 1 bit (WORD)).
 
 
 	0b 00000000 00000000 00000000 000000 |       0      |   0
              (TAG - 30 bits)               (LINE - 1 bit)  (WORD - 1 bit)
 
-	Exemplo de enderaçamento na cache:
+	Exemplo de enderaÃ§amento na cache:
 
-	Suponha que a CPU solicitou a instrução que esta no endereço
+	Suponha que a CPU solicitou a instruÃ§Ã£o que esta no endereÃ§o
 	0b 00000000 00000000 00000000 00000011 (end. 3)
 
 		0b 00000000 00000000 00000000 000000 |        1      |     1
          (TAG - 30 bits)                       (LINE - 1 bit)  (WORD - 1 bit)
 
 
-    Este endereço deve ser procurado na linha 1 da cache e a TAG deve estar com o
+    Este endereÃ§o deve ser procurado na linha 1 da cache e a TAG deve estar com o
     valor 0. Caso ocorra sucesso (a TAG presente na linha 1 seja igual a esperada)
     deve ser lido a WORD 1
 
@@ -188,7 +188,7 @@ int main()
     initVariables();
     while (ProgramCounter < __PROGRAM_MEMORY_SIZE_)
 	{
-        Instruction = getFromCache(ProgramCounter);//ProgMemory[PC]; // busca da instrução
+        Instruction = getFromCache(ProgramCounter);//ProgMemory[PC]; // busca da instruÃ§Ã£o
         ProgramCounter = ProgramCounter + 1;
 		decode();
 		evaluate();
@@ -203,14 +203,14 @@ void initVariables()
 {
     unsigned char i;
 
-	// Inicialização dos registradores
+	// InicializaÃ§Ã£o dos registradores
 	ProgramCounter = 0;
 	for (i = 0; i < __REGISTER_SIZE; i++)
 	{
 		Register[i] = 0;
 	}
 
-	// Inicialização da memória cache
+	// InicializaÃ§Ã£o da memÃ³ria cache
 	for(i = 0; i < __MEMORY_CACHE_SIZE_; i++)
 	{
 		MemoryCache[i].bValid = false;
